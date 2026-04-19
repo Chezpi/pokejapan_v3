@@ -14,9 +14,7 @@ from bs4 import BeautifulSoup
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
-
-def get_conn():
-    return psycopg2.connect(os.getenv("DATABASE_URL"))
+from psycopg2.extras import RealDictCursor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
@@ -80,7 +78,8 @@ manager = WSManager()
 
 # ─── Base de datos ─────────────────────────────────────────────────────────
 
-
+def get_conn():
+    return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 def init_db():
     conn = get_conn(); cur = conn.cursor()
