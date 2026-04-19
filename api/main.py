@@ -17,52 +17,98 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import requests
 from bs4 import BeautifulSoup
-from fastapi import FastAPI
+import httpx
+from bs4 import BeautifulSoup
+import re
 
-app = FastAPI()
+BASE_URL = "https://www.cardrush-pokemon.jp"
 
-@app.get("/products")
-def get_products():
-    url = "https://pokecazilla.com/collections/pokemon"
+def map_condition(text):
+    if "美品" in text:
+        return "A"
+    elif "良品" in text:
+        return "B"
+    elif "並品" in text:
+        return "C"
+    elif "傷" in text:
+        return "D"
+    return None
+
+def extract_price(text):
+    # Extrae números tipo 32,800円
+    match = re.search(r'([\d,]+)', text)
+    if match:
+        return int(match.group(1).replace(",", ""))
+    return 0
+
+def extract_psa(text):
+    match = re.search(r'PSA\s?(\d+)', text.upper())
+    if match:
+        return f"PSA {match.group(1)}"
+    return None
+
+
+async def scrape_cardrush(query="リザードン"):
+    url = f"{BASE_URL}/product-list?keyword={query}"
+
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
 
-    r = requests.get(url, headers=headers)
-    soup = BeautifulSoup(r.text, "html.parser")
+    async with httpx.AsyncClient() as client:
+        r = await client.get(url, headers=headers)
+
+    soup = BeautifulSoup(r.text, "lxml")
 
     products = []
 
-    items = soup.select(".product-item")  # 👈 puede cambiar según la web
+    items = soup.select(".product_item")
 
-    for i, item in enumerate(items[:10]):
-        name = item.select_one(".product-title")
-        price = item.select_one(".price")
+    for i, item in enumerate(items[:30]):
+
+        text = item.get_text(" ", strip=True)
+
+        name = text[:100]
+
+        price = extract_price(text)
+
+        condition = map_condition(text)
+
+        psa = extract_psa(text)
+
+        link_tag = item.select_one("a")
+        link = BASE_URL + link_tag["href"] if link_tag else BASE_URL
 
         products.append({
             "id": i,
-            "name": name.text.strip() if name else "Unknown",
-            "name_ja": "",
+            "name": name,
+            "name_ja": name,
             "set": "",
             "sname": "",
-            "rarity": "SR",
+            "rarity": "",
             "cat": "carta",
             "sources": [
                 {
-                    "src": "pokecazilla",
-                    "jpy": 3000,  # ⚠️ aquí parseas el precio real
-                    "url": url,
+                    "src": "cardrush",
+                    "jpy": price,
+                    "condition": condition,
+                    "grade": psa,
+                    "url": link,
                     "imgs": []
                 }
             ]
         })
 
+    return products
+
+@app.get("/products")
+async def get_products(q: str = "リザードン"):
+    products = await scrape_cardrush(q)
+
     return {
         "products": products,
         "total": len(products)
     }
-
-
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
