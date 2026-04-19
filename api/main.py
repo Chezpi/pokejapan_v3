@@ -15,6 +15,54 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import requests
+from bs4 import BeautifulSoup
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/products")
+def get_products():
+    url = "https://pokecazilla.com/collections/pokemon"
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    r = requests.get(url, headers=headers)
+    soup = BeautifulSoup(r.text, "html.parser")
+
+    products = []
+
+    items = soup.select(".product-item")  # 👈 puede cambiar según la web
+
+    for i, item in enumerate(items[:10]):
+        name = item.select_one(".product-title")
+        price = item.select_one(".price")
+
+        products.append({
+            "id": i,
+            "name": name.text.strip() if name else "Unknown",
+            "name_ja": "",
+            "set": "",
+            "sname": "",
+            "rarity": "SR",
+            "cat": "carta",
+            "sources": [
+                {
+                    "src": "pokecazilla",
+                    "jpy": 3000,  # ⚠️ aquí parseas el precio real
+                    "url": url,
+                    "imgs": []
+                }
+            ]
+        })
+
+    return {
+        "products": products,
+        "total": len(products)
+    }
+
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
