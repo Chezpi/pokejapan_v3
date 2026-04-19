@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PokeJapan — Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',system-ui,sans-serif;background:#f5f5f7;color:#111;min-height:100vh}
+/* topbar */
+.topbar{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.lb{width:30px;height:30px;background:#e8001a;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.lb svg{width:15px;height:15px}
+.lt{font-size:16px;font-weight:700;color:#111}.lt em{color:#e8001a;font-style:normal}
+.tsearch{flex:1;max-width:320px;margin:0 12px;position:relative}
+.tsearch input{width:100%;background:#f5f5f7;border:1px solid #e0e0e0;border-radius:20px;padding:6px 12px 6px 32px;font-size:13px;font-family:inherit;outline:none}
+.tsearch input:focus{border-color:#e8001a}
+.si{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#bbb;font-size:14px}
+.tr{margin-left:auto;display:flex;gap:8px;align-items:center}
+.csel{background:#f5f5f7;border:1px solid #e0e0e0;border-radius:8px;padding:5px 8px;font-size:12px;font-family:inherit;cursor:pointer}
+.lpill{display:flex;align-items:center;gap:5px;background:#EAF3DE;border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600;color:#3B6D11}
+.ldot{width:6px;height:6px;border-radius:50%;background:#3B6D11;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.cbtn{background:#e8001a;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px}
+.cbadge{background:rgba(255,255,255,.25);border-radius:10px;padding:0 6px;font-size:11px;font-weight:700;min-width:18px;text-align:center}
+/* customs banner */
+.banner{background:#FFF8E6;border-bottom:1px solid #F5C475;padding:9px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}
+.banner-icon{font-size:16px;flex-shrink:0}
+.banner-text{color:#633806;font-weight:500;flex:1;line-height:1.4}
+.banner select{background:#fff;border:1px solid #F5C475;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;color:#633806;cursor:pointer;margin-left:auto}
+/* catnav */
+.catnav{background:#fff;border-bottom:1px solid #e8e8e8;padding:0 20px;display:flex;gap:4px;align-items:center;height:40px;overflow-x:auto}
+.catnav::-webkit-scrollbar{display:none}
+.cpill{padding:5px 12px;font-size:12px;font-weight:500;border:1px solid #e0e0e0;border-radius:20px;cursor:pointer;background:#f5f5f7;color:#666;font-family:inherit;white-space:nowrap;transition:all .12s}
+.cpill.on{background:#e8001a;border-color:#e8001a;color:#fff}
+.sset{margin-left:auto;background:#f5f5f7;border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit;flex-shrink:0}
+/* ticker */
+.ticker{background:#111;padding:5px 20px;display:flex;gap:20px;overflow:hidden;font-size:11px;color:#666;white-space:nowrap}
+.tn{display:inline-flex;align-items:center;gap:4px}
+.tup{color:#ff6b6b}.tdn{color:#4dff91}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;padding:16px 20px}
+/* card */
+.card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;overflow:hidden;cursor:pointer;transition:transform .12s,border-color .12s}
+.card:hover{transform:translateY(-2px);border-color:#bbb}
+.card.fdn{border-color:#4dff91!important;background:#f0fff5}
+.card.fup{border-color:#ff6b6b!important;background:#fff5f5}
+.cthumb{height:120px;background:#f5f5f7;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.cthumb img{width:100%;height:100%;object-fit:contain;padding:8px}
+.cph{font-size:48px;opacity:.1;font-weight:700}
+.rbadge{position:absolute;top:7px;left:7px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.5px}
+.r-sar{background:#FAEEDA;color:#633806}.r-sr{background:#E6F1FB;color:#0C447C}
+.r-ar{background:#EAF3DE;color:#27500A}.r-rr{background:#F1EFE8;color:#5F5E5A}
+.r-pr{background:#FBEAF0;color:#72243E}
+.see-photos{position:absolute;bottom:6px;right:7px;font-size:10px;background:rgba(0,0,0,.5);color:#fff;padding:2px 7px;border-radius:20px;font-weight:500}
+.cbody{padding:10px 12px}
+.cname{font-size:12px;font-weight:600;color:#111;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cset{font-size:10px;color:#aaa;margin-bottom:7px}
+.cprice{font-size:19px;font-weight:700;color:#111;margin-bottom:1px}
+.cpricelt{font-size:11px;color:#aaa;margin-bottom:7px}
+.grades-mini{display:flex;gap:4px;margin-bottom:8px}
+.gm{flex:1;text-align:center;background:#f5f5f7;border-radius:6px;padding:4px 2px}
+.gm-l{font-size:10px;font-weight:700;color:#333}
+.gm-p{font-size:9px;color:#888}
+.addbtn{width:100%;background:#e8001a;color:#fff;border:none;border-radius:8px;padding:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.addbtn:hover{opacity:.85}
+/* modal overlay */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:20px;z-index:200;overflow-y:auto}
+.mbox{background:#fff;border-radius:16px;width:100%;max-width:700px;overflow:hidden;margin-top:10px;margin-bottom:20px}
+.mhead{background:#e8001a;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+.mhead-title{font-size:16px;font-weight:700;color:#fff}
+.mhead-sub{font-size:12px;color:rgba(255,255,255,.7)}
+.mclose{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;font-size:15px;cursor:pointer;font-family:inherit}
+.mbody{padding:18px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:560px){.mbody{grid-template-columns:1fr}}
+/* foto area */
+.photo-main{height:220px;background:#f5f5f7;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;margin-bottom:8px;position:relative}
+.photo-main img{width:100%;height:100%;object-fit:contain}
+.photo-n{position:absolute;bottom:7px;right:7px;font-size:10px;background:rgba(0,0,0,.5);color:#fff;padding:2px 7px;border-radius:20px}
+.thumbs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.thumbs img{width:46px;height:46px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid #e0e0e0;transition:border-color .12s}
+.thumbs img.active{border:2px solid #e8001a}
+.src-label{font-size:10px;font-weight:600;color:#888;letter-spacing:.6px;margin-bottom:6px}
+.src-btns{display:flex;gap:6px;flex-wrap:wrap}
+.sbtn{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid #e0e0e0;background:#f9f9f9;color:#666;transition:all .12s}
+.sbtn.on{border:2px solid #e8001a;background:#fff5f5;color:#e8001a}
+/* grade selector */
+.grade-desc{background:#f9f9f9;border:1px solid #e8e8e8;border-radius:8px;padding:10px 12px;font-size:12px;color:#555;line-height:1.5;margin-bottom:10px}
+.grade-desc strong{color:#e8001a}
+.gsbox{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.gs{border:1px solid #e0e0e0;border-radius:10px;padding:10px 6px;cursor:pointer;background:#fff;text-align:center;transition:all .12s}
+.gs.on{border:2px solid #e8001a;background:#fff5f5}
+.gs-g{font-size:16px;font-weight:700;color:#333}
+.gs.on .gs-g{color:#e8001a}
+.gs-n{font-size:10px;color:#888;margin:2px 0}
+.gs-p{font-size:12px;font-weight:600;color:#111}
+/* price breakdown */
+.pbreak{background:#f9f9f9;border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;font-size:13px;margin-bottom:12px}
+.pbrow{display:flex;justify-content:space-between;padding:7px 13px;border-bottom:1px solid #f0f0f0;align-items:center}
+.pbrow:last-child{border:none}
+.pb-l{color:#666}
+.pb-v{font-weight:500;color:#111}
+.pbtotal{display:flex;justify-content:space-between;padding:10px 13px;font-weight:700;font-size:15px;background:#fff}
+.pbtotal span:last-child{color:#e8001a}
+.pbship{padding:7px 13px;font-size:11px;color:#aaa;background:#fff;border-top:1px solid #f0f0f0}
+/* add to cart btn */
+.addcart{width:100%;background:#e8001a;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px}
+/* cart panel */
+.cartpanel{background:#fff;border-top:1px solid #e8e8e8;padding:14px 20px}
+.cptitle{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.cpclose{background:none;border:none;font-size:16px;cursor:pointer;color:#bbb;font-family:inherit}
+.citem{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f5f5f5}
+.citem-img{width:38px;height:38px;background:#f5f5f7;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.citem-img img{width:100%;height:100%;object-fit:contain}
+.citem-name{flex:1;font-size:12px;font-weight:500;color:#111}
+.citem-grade{font-size:10px;color:#aaa}
+.citem-price{font-size:13px;font-weight:600;flex-shrink:0}
+.citem-rm{background:none;border:none;color:#ddd;cursor:pointer;font-size:16px;font-family:inherit}
+.citem-rm:hover{color:#e8001a}
+.cptotal{display:flex;justify-content:space-between;padding:10px 0 4px;font-size:15px;font-weight:600}
+.cpnote{font-size:11px;color:#aaa;line-height:1.5;padding:9px;background:#f9f9f9;border-radius:8px;margin:6px 0 10px}
+.cpcheckout{width:100%;background:#e8001a;color:#fff;border:none;border-radius:8px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+/* checkout modal */
+.form-label{display:block;font-size:10px;font-weight:600;color:#888;letter-spacing:.6px;margin-bottom:4px}
+.form-input{width:100%;background:#f5f5f7;border:1px solid #e0e0e0;border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px}
+.form-input:focus{border-color:#e8001a}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pay-methods{display:flex;gap:7px;margin-bottom:12px}
+.pm{flex:1;padding:8px;border:1px solid #e0e0e0;border-radius:8px;background:#f9f9f9;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;text-align:center;transition:all .12s}
+.pm.on{border:2px solid #e8001a;background:#fff5f5;color:#e8001a}
+.order-sum{background:#f9f9f9;border-radius:8px;padding:12px;margin:10px 0;font-size:12px}
+.os-row{display:flex;justify-content:space-between;padding:3px 0;color:#666}
+.os-total{display:flex;justify-content:space-between;padding:8px 0 0;font-size:15px;font-weight:700;border-top:1px solid #e8e8e8;margin-top:5px}
+.os-total span:last-child{color:#e8001a}
+.os-tax{background:#FFF8E6;border:1px solid #F5C475;border-radius:6px;padding:6px 9px;font-size:11px;color:#633806;margin-top:6px;line-height:1.5}
+.confirmbtn{width:100%;background:#e8001a;color:#fff;border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+footer{padding:14px 20px 24px;font-size:11px;color:#bbb;text-align:center;line-height:1.8}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <a class="logo" href="#">
+    <div class="lb"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="3" fill="#fff" stroke="none"/></svg></div>
+    <span class="lt">Poké<em>Japan</em></span>
+  </a>
+  <div class="tsearch"><span class="si">⌕</span><input id="sq" type="text" placeholder="Buscar carta o expansión..." oninput="render()"></div>
+  <div class="tr">
+    <div class="lpill"><span class="ldot"></span>En vivo</div>
+    <select class="csel" id="cur" onchange="render()">
+      <option value="EUR">€ EUR</option><option value="USD">$ USD</option>
+      <option value="GBP">£ GBP</option><option value="JPY">¥ JPY</option>
+      <option value="CAD">CA$ CAD</option><option value="AUD">A$ AUD</option>
+    </select>
+    <button class="cbtn" onclick="toggleCart()">Carrito <span class="cbadge" id="cn">0</span></button>
+  </div>
+</nav>
+
+<!-- CUSTOMS BANNER -->
+<div class="banner">
+  <span class="banner-icon">⚠️</span>
+  <span class="banner-text" id="bannerText"></span>
+  <select id="country" onchange="updateBanner(); render()">
+    <option value="ES">España (21%)</option><option value="DE">Alemania (19%)</option>
+    <option value="FR">Francia (20%)</option><option value="IT">Italia (22%)</option>
+    <option value="PT">Portugal (23%)</option><option value="GB">Reino Unido (20%)</option>
+    <option value="NL">Países Bajos (21%)</option><option value="CH">Suiza (7.7%)</option>
+    <option value="US">Estados Unidos (0%)</option><option value="CA">Canadá (5%)</option>
+    <option value="AU">Australia (10%)</option><option value="OTHER">Otro (20% est.)</option>
+  </select>
+</div>
+
+<!-- CAT NAV -->
+<div class="catnav">
+  <button class="cpill on" onclick="setCat('',this)">Todo</button>
+  <button class="cpill" onclick="setCat('carta',this)">Cartas singles</button>
+  <button class="cpill" onclick="setCat('caja',this)">Cajas booster</button>
+  <button class="cpill" onclick="setCat('promo',this)">Cartas promo</button>
+  <button class="cpill" onclick="setCat('sar',this)">SAR / HR</button>
+  <select class="sset" id="setSel" onchange="render()">
+    <option value="">Todas las expansiones</option>
+    <option value="sv3">Obsidian Flames</option>
+    <option value="sv4">Paradox Rift</option>
+    <option value="sv1">Scarlet &amp; Violet Base</option>
+    <option value="swsh3">Darkness Ablaze</option>
+  </select>
+</div>
+
+<!-- TICKER -->
+<div class="ticker" id="ticker">
+  <span class="tn"><span class="tdn">▼</span>Charizard ex SAR · ¥37,200 · Pokécazilla</span>
+  <span class="tn"><span class="tup">▲</span>Umbreon VMAX SAR · ¥29,800 · SneakerDunk</span>
+  <span class="tn"><span class="tdn">▼</span>Gardevoir ex SAR · ¥5,800 · Pokécazilla</span>
+  <span class="tn"><span class="tup">▲</span>Mewtwo ex SAR · ¥12,100 · SneakerDunk</span>
+</div>
+
+<!-- GRID -->
+<div class="grid" id="grid"></div>
+
+<!-- CART PANEL -->
+<div id="cartWrap" style="display:none">
+  <div class="cartpanel">
+    <div class="cptitle">Tu carrito <button class="cpclose" onclick="toggleCart()">✕</button></div>
+    <div id="cartItems"></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="moverlay" id="detailModal" style="display:none" onclick="closeDetail(event)">
+  <div class="mbox" id="detailBox"></div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="moverlay" id="checkoutModal" style="display:none" onclick="closeCheckout(event)">
+  <div class="mbox" id="checkoutBox">
+    <div class="mhead">
+      <div><div class="mhead-title">Tramitar pedido</div><div class="mhead-sub">Completa tus datos para confirmar</div></div>
+      <button class="mclose" onclick="document.getElementById('checkoutModal').style.display='none'">✕</button>
+    </div>
+    <div style="padding:18px">
+      <div class="form-grid">
+        <div><label class="form-label">Nombre</label><input class="form-input" placeholder="Tu nombre"></div>
+        <div><label class="form-label">Apellidos</label><input class="form-input" placeholder="Apellidos"></div>
+      </div>
+      <label class="form-label">Email</label><input class="form-input" type="email" placeholder="tu@email.com">
+      <label class="form-label">Dirección</label><input class="form-input" placeholder="Calle, número, piso...">
+      <div class="form-grid">
+        <div><label class="form-label">Ciudad</label><input class="form-input" placeholder="Madrid"></div>
+        <div><label class="form-label">Código postal</label><input class="form-input" placeholder="28001"></div>
+      </div>
+      <label class="form-label">Método de pago</label>
+      <div class="pay-methods">
+        <div class="pm on" onclick="selPay(this)">💳 Tarjeta</div>
+        <div class="pm" onclick="selPay(this)">PayPal</div>
+        <div class="pm" onclick="selPay(this)">Bizum</div>
+      </div>
+      <div class="order-sum" id="checkoutSummary"></div>
+      <button class="confirmbtn">Confirmar y pagar →</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Precio final incluye producto, gestión en Japón y todos los costes de importación a Europa<br>
+  El envío internacional se calcula al confirmar · Solo enviamos desde Japón · PokeJapan © 2025
+</footer>
+
+<script>
+// ── Constantes ──
+const COMM=0.05, FRIEND=1000, EUR_JPY=162;
+const FX={EUR:1,USD:1.08,GBP:0.85,JPY:EUR_JPY,CAD:1.47,AUD:1.65,CHF:0.96};
+const SYM={EUR:'€',USD:'$',GBP:'£',JPY:'¥',CAD:'CA$',AUD:'A$',CHF:'CHF '};
+const TAX={ES:.21,DE:.19,FR:.20,IT:.22,PT:.23,GB:.20,NL:.21,CH:.077,US:0,CA:.05,AU:.10,OTHER:.20};
+const COUNTRY={ES:'España',DE:'Alemania',FR:'Francia',IT:'Italia',PT:'Portugal',GB:'Reino Unido',NL:'Países Bajos',CH:'Suiza',US:'EE.UU.',CA:'Canadá',AU:'Australia',OTHER:'Otro país'};
+const GRADES=[
+  {g:'A',n:'Perfecta',  desc:'Sin marcas visibles. Como nueva.',              m:1.00},
+  {g:'B',n:'Casi nueva',desc:'Marcas mínimas solo bajo luz directa.',         m:0.80},
+  {g:'C',n:'Leve uso',  desc:'Pequeños roces visibles en los bordes.',        m:0.60},
+  {g:'D',n:'Usada',     desc:'Arañazos o marcas claramente visibles.',        m:0.42},
+];
+const RSTY={SAR:'r-sar',MUR:'r-sar',HR:'r-sar',SR:'r-sr',AR:'r-ar',RR:'r-rr',PR:'r-pr',BOX:'r-sar'};
+
+// Cartas de demo (en producción vienen del backend via WebSocket)
+const CARDS=[
+  {id:1,name:'Charizard ex',name_ja:'リザードンex',set:'sv3',sname:'Obsidian Flames',rarity:'SAR',cat:'sar',
+   sources:[{src:'pokecazilla',jpy:37200,url:'https://pokecazilla.com',imgs:['https://assets.tcgdex.net/en/swsh/swsh3/136/high.webp']},
+            {src:'sneakerdunk',jpy:39500,url:'https://snkrdunk.com',imgs:[]}]},
+  {id:2,name:'Umbreon VMAX',name_ja:'ブラッキーVMAX',set:'swsh3',sname:'Darkness Ablaze',rarity:'SAR',cat:'sar',
+   sources:[{src:'pokecazilla',jpy:29800,url:'https://pokecazilla.com',imgs:[]},
+            {src:'sneakerdunk',jpy:31000,url:'https://snkrdunk.com',imgs:[]}]},
+  {id:3,name:'Mewtwo ex SAR',name_ja:'ミュウツーex',set:'sv1',sname:'SV Base Set',rarity:'SAR',cat:'sar',
+   sources:[{src:'pokecazilla',jpy:12100,url:'https://pokecazilla.com',imgs:[]},
+            {src:'sneakerdunk',jpy:13200,url:'https://snkrdunk.com',imgs:[]}]},
+  {id:4,name:'Gardevoir ex SAR',name_ja:'サーナイトex',set:'sv2',sname:'Paldea Evolved',rarity:'SAR',cat:'sar',
+   sources:[{src:'pokecazilla',jpy:5800,url:'https://pokecazilla.com',imgs:[]},
+            {src:'sneakerdunk',jpy:6200,url:'',imgs:[]}]},
+  {id:5,name:'Pikachu VMAX',name_ja:'ピカチュウVMAX',set:'swsh3',sname:'Vivid Voltage',rarity:'RR',cat:'carta',
+   sources:[{src:'pokecazilla',jpy:6400,url:'https://pokecazilla.com',imgs:[]}]},
+  {id:6,name:'Pokemon 151 Box',name_ja:'ポケモン151ボックス',set:'sv2a',sname:'Pokemon 151',rarity:'BOX',cat:'caja',
+   sources:[{src:'pokecazilla',jpy:4900,url:'https://pokecazilla.com',imgs:[]},
+            {src:'sneakerdunk',jpy:5400,url:'',imgs:[]}]},
+  {id:7,name:'Pikachu Promo S-P',name_ja:'ピカチュウ プロモ',set:'promo',sname:'SV Promo',rarity:'PR',cat:'promo',
+   sources:[{src:'pokecazilla',jpy:3800,url:'https://pokecazilla.com',imgs:[]}]},
+  {id:8,name:'Greninja ex SR',name_ja:'ゲッコウガex',set:'sv4',sname:'Paradox Rift',rarity:'SR',cat:'carta',
+   sources:[{src:'pokecazilla',jpy:2100,url:'https://pokecazilla.com',imgs:[]},
+            {src:'sneakerdunk',jpy:2400,url:'',imgs:[]}]},
+];
+
+let activeCat='', cart=[], detailCard=null, detailGrade='A', detailSrc=0;
+
+// ── Cálculo ──
+function calc(jpy,grade,country,cur){
+  const m=GRADES.find(g=>g.g===grade)?.m??1;
+  const gjpy=Math.round(jpy*m);
+  const fjpy=FRIEND;
+  const cjpy=Math.round((gjpy+fjpy)*COMM);
+  const sub=gjpy+fjpy+cjpy;
+  const tax=TAX[country]??TAX.OTHER;
+  const taxjpy=Math.round(sub*tax);
+  const total=sub+taxjpy;
+  let disp;
+  if(cur==='JPY') disp='¥'+total.toLocaleString('es-ES');
+  else disp=SYM[cur]+((total/EUR_JPY)*FX[cur]).toFixed(2);
+  return {gjpy,fjpy,cjpy,sub,tax,taxjpy,total,disp};
+}
+function country(){return document.getElementById('country').value}
+function cur(){return document.getElementById('cur').value}
+function fmt(jpy){
+  const c=cur();
+  if(c==='JPY') return '¥'+Math.round(jpy).toLocaleString('es-ES');
+  return SYM[c]+((jpy/EUR_JPY)*FX[c]).toFixed(2);
+}
+
+// ── Banner ──
+function updateBanner(){
+  const co=country();
+  const pct=Math.round((TAX[co]??TAX.OTHER)*100);
+  document.getElementById('bannerText').textContent=
+    `Envío y aduanas: el precio que ves ya incluye el IVA de importación de ${COUNTRY[co]} (${pct}%) y todos los costes de gestión. El envío internacional se calcula al finalizar el pedido según el peso total.`;
+}
+
+// ── Categorías ──
+function setCat(c,btn){
+  activeCat=c;
+  document.querySelectorAll('.cpill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+
+// ── Render grid ──
+function render(){
+  const q=document.getElementById('sq').value.toLowerCase();
+  const setF=document.getElementById('setSel').value;
+  let list=CARDS.filter(c=>{
+    const mc=!activeCat||(activeCat==='sar'?c.cat==='sar':c.cat===activeCat);
+    const mq=!q||c.name.toLowerCase().includes(q)||c.name_ja.includes(q)||c.sname.toLowerCase().includes(q);
+    const ms=!setF||c.set===setF;
+    return mc&&mq&&ms;
+  });
+  const grid=document.getElementById('grid');
+  if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:#bbb;font-size:14px">No se encontraron cartas</div>';updateCartUI();return;}
+  const co=country(),c=cur();
+  grid.innerHTML=list.map(card=>{
+    const ch=[...card.sources].sort((a,b)=>a.jpy-b.jpy)[0];
+    const pA=calc(ch.jpy,'A',co,c);
+    const pD=calc(ch.jpy,'D',co,c);
+    const rs=RSTY[card.rarity]||'r-rr';
+    const gmini=GRADES.map(g=>{
+      const p=calc(ch.jpy,g.g,co,c);
+      return `<div class="gm"><div class="gm-l">${g.g}</div><div class="gm-p">${p.disp}</div></div>`;
+    }).join('');
+    return `<div class="card" id="card-${card.id}" onclick="openDetail(${card.id})">
+      <div class="cthumb">
+        <div class="cph">${card.cat==='caja'?'□':card.cat==='promo'?'★':'◆'}</div>
+        <div class="rbadge ${rs}">${card.rarity}</div>
+        <div class="see-photos">Ver fotos →</div>
+      </div>
+      <div class="cbody">
+        <div class="cname" title="${card.name}">${card.name}</div>
+        <div class="cset">${card.sname}</div>
+        <div class="cprice">${pA.disp}</div>
+        <div class="cpricelt">Estado A · desde ${pD.disp} en D</div>
+        <div class="grades-mini">${gmini}</div>
+        <button class="addbtn" onclick="event.stopPropagation();addCart(${card.id},'A','${ch.src}')">
+          Añadir (estado A)
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+  updateCartUI();
+}
+
+// ── Detalle modal ──
+function openDetail(id){
+  detailCard=CARDS.find(c=>c.id===id);
+  detailGrade='A';
+  detailSrc=0;
+  renderDetail();
+  document.getElementById('detailModal').style.display='flex';
+}
+function closeDetail(e){
+  if(e.target.id==='detailModal') document.getElementById('detailModal').style.display='none';
+}
+function renderDetail(){
+  if(!detailCard) return;
+  const card=detailCard;
+  const co=country(),c=cur();
+  const src=card.sources[detailSrc]||card.sources[0];
+  const base=src.jpy;
+  const p=calc(base,detailGrade,co,c);
+
+  // Grades
+  const gshtml=GRADES.map(g=>{
+    const gp=calc(base,g.g,co,c);
+    const on=detailGrade===g.g?'on':'';
+    return `<div class="gs ${on}" onclick="detailGrade='${g.g}';renderDetail()">
+      <div class="gs-g">${g.g}</div>
+      <div class="gs-n">${g.n}</div>
+      <div class="gs-p">${gp.disp}</div>
+    </div>`;
+  }).join('');
+
+  // Sources
+  const srchtml=card.sources.map((s,i)=>{
+    const on=i===detailSrc?'on':'';
+    const lbl=s.src==='pokecazilla'?'Pokécazilla':'SneakerDunk';
+    return `<button class="sbtn ${on}" onclick="detailSrc=${i};renderDetail()">${lbl} <span style="font-size:10px;color:#aaa;margin-left:4px">¥${s.jpy.toLocaleString()}</span></button>`;
+  }).join('');
+
+  const gdesc=GRADES.find(g=>g.g===detailGrade);
+  const taxpct=Math.round((TAX[co]??TAX.OTHER)*100);
+
+  // Desglose
+  const rows=[
+    {l:`Carta estado ${detailGrade}`, v:fmt(p.gjpy)},
+    {l:'Gestión local Japón',         v:fmt(p.fjpy), note:'¥1.000 fijo'},
+    {l:'Comisión de servicio (5%)',   v:fmt(p.cjpy)},
+    {l:`IVA importación ${COUNTRY[co]} (${taxpct}%)`, v:fmt(p.taxjpy)},
+  ];
+  const pbrows=rows.map(r=>`<div class="pbrow">
+    <span class="pb-l">${r.l}${r.note?` <span style="font-size:10px;color:#bbb">${r.note}</span>`:''}</span>
+    <span class="pb-v">${r.v}</span>
+  </div>`).join('');
+
+  document.getElementById('detailBox').innerHTML=`
+    <div class="mhead">
+      <div>
+        <div class="mhead-title">${card.name}</div>
+        <div class="mhead-sub">${card.sname} · ${card.rarity} · ${card.name_ja}</div>
+      </div>
+      <button class="mclose" onclick="document.getElementById('detailModal').style.display='none'">✕</button>
+    </div>
+    <div class="mbody">
+      <div>
+        <div class="photo-main">
+          <div style="font-size:90px;opacity:.08;font-weight:700">${card.cat==='caja'?'□':card.cat==='promo'?'★':'◆'}</div>
+          <div class="photo-n">Fotos reales del vendedor</div>
+        </div>
+        <div style="font-size:10px;color:#bbb;margin-bottom:10px;line-height:1.4">
+          Las fotos del estado real de la carta se cargan desde la tienda de origen (Pokécazilla / SneakerDunk) al seleccionar el vendedor.
+        </div>
+        <div class="src-label">DISPONIBLE EN</div>
+        <div class="src-btns">${srchtml}</div>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:600;color:#888;letter-spacing:.6px;margin-bottom:6px">ESTADO DE LA CARTA</div>
+        <div class="grade-desc"><strong>Estado ${detailGrade} — ${gdesc.n}:</strong> ${gdesc.desc}</div>
+        <div class="gsbox">${gshtml}</div>
+        <div style="font-size:10px;font-weight:600;color:#888;letter-spacing:.6px;margin-bottom:6px">DESGLOSE DEL PRECIO</div>
+        <div class="pbreak">
+          ${pbrows}
+          <div class="pbtotal"><span>Total (sin envío)</span><span>${p.disp}</span></div>
+          <div class="pbship">+ Envío internacional al confirmar según peso y destino</div>
+        </div>
+        <button class="addcart" onclick="addCart(${card.id},'${detailGrade}','${src.src}');document.getElementById('detailModal').style.display='none'">
+          Añadir al carrito — ${p.disp}
+        </button>
+      </div>
+    </div>`;
+}
+
+// ── Carrito ──
+function addCart(id,grade,src){
+  const card=CARDS.find(c=>c.id===id);
+  if(!card) return;
+  const source=card.sources.find(s=>s.src===src)||card.sources[0];
+  cart.push({card,grade,src:source.src,jpy:source.jpy});
+  document.getElementById('cartWrap').style.display='block';
+  updateCartUI();
+}
+function removeCart(i){
+  cart.splice(i,1);
+  updateCartUI();
+  if(!cart.length) document.getElementById('cartWrap').style.display='none';
+}
+function toggleCart(){
+  const w=document.getElementById('cartWrap');
+  w.style.display=w.style.display==='none'?'block':'none';
+}
+function updateCartUI(){
+  const co=country(),c=cur();
+  document.getElementById('cn').textContent=cart.length;
+  const el=document.getElementById('cartItems');
+  if(!cart.length){el.innerHTML='<p style="font-size:13px;color:#bbb;padding:8px 0">El carrito está vacío</p>';return;}
+  let total=0;
+  const rows=cart.map((ci,i)=>{
+    const p=calc(ci.jpy,ci.grade,co,c);
+    total+=p.total;
+    const lbl=ci.src==='pokecazilla'?'Pokécazilla':'SneakerDunk';
+    return `<div class="citem">
+      <div class="citem-img"><div style="font-size:22px;opacity:.2">${ci.card.cat==='caja'?'□':'◆'}</div></div>
+      <div style="flex:1">
+        <div class="citem-name">${ci.card.name}</div>
+        <div class="citem-grade">Estado ${ci.grade} · ${lbl}</div>
+      </div>
+      <div class="citem-price">${p.disp}</div>
+      <button class="citem-rm" onclick="removeCart(${i})">×</button>
+    </div>`;
+  }).join('');
+  const totalFmt=c==='JPY'?'¥'+Math.round(total).toLocaleString('es-ES'):SYM[c]+((total/EUR_JPY)*FX[c]).toFixed(2);
+  el.innerHTML=rows+`
+    <div class="cptotal"><span>Total (sin envío)</span><span>${totalFmt}</span></div>
+    <div class="cpnote">Todos los costes de importación incluidos. El envío internacional se calcula al confirmar según peso y destino.</div>
+    <button class="cpcheckout" onclick="openCheckout()">Proceder al pago →</button>`;
+}
+
+// ── Checkout ──
+function openCheckout(){
+  const co=country(),c=cur();
+  let total=0,ttax=0,tcomm=0,tfriend=0;
+  cart.forEach(ci=>{
+    const p=calc(ci.jpy,ci.grade,co,c);
+    total+=p.total; ttax+=p.taxjpy; tcomm+=p.cjpy; tfriend+=p.fjpy;
+  });
+  const lines=cart.map(ci=>{
+    const p=calc(ci.jpy,ci.grade,co,c);
+    return `<div class="os-row"><span>${ci.card.name} (${ci.grade})</span><span>${p.disp}</span></div>`;
+  }).join('');
+  const tpct=Math.round((TAX[co]??TAX.OTHER)*100);
+  const f=(jpy)=>c==='JPY'?'¥'+Math.round(jpy).toLocaleString('es-ES'):SYM[c]+((jpy/EUR_JPY)*FX[c]).toFixed(2);
+  const tf=c==='JPY'?'¥'+Math.round(total).toLocaleString('es-ES'):SYM[c]+((total/EUR_JPY)*FX[c]).toFixed(2);
+  document.getElementById('checkoutSummary').innerHTML=`
+    ${lines}
+    <div style="border-top:1px solid #e8e8e8;margin:6px 0"></div>
+    <div class="os-row"><span>Gestión Japón (¥1.000/ud)</span><span>${f(tfriend)}</span></div>
+    <div class="os-row"><span>Comisión servicio (5%)</span><span>${f(tcomm)}</span></div>
+    <div class="os-row"><span>IVA importación ${COUNTRY[co]} (${tpct}%)</span><span>${f(ttax)}</span></div>
+    <div class="os-total"><span>Total</span><span>${tf}</span></div>
+    <div class="os-tax">⚠️ El IVA de importación (${tpct}%) está incluido en el precio. Será gestionado en tu nombre al pasar la aduana. No recibirás ningún cargo adicional por este concepto.</div>`;
+  document.getElementById('checkoutModal').style.display='flex';
+}
+function closeCheckout(e){
+  if(e.target.id==='checkoutModal') document.getElementById('checkoutModal').style.display='none';
+}
+function selPay(btn){
+  document.querySelectorAll('.pm').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// Simulación actualizaciones en vivo
+function simUpdate(){
+  const c=CARDS[Math.floor(Math.random()*CARDS.length)];
+  const d=(Math.random()-.45)*.05;
+  c.sources[0].jpy=Math.max(500,Math.round(c.sources[0].jpy*(1+d)));
+  const el=document.getElementById('card-'+c.id);
+  if(el){
+    el.classList.add(d<0?'fdn':'fup');
+    setTimeout(()=>el.classList.remove('fdn','fup'),1800);
+  }
+  render();
+}
+
+// Init
+updateBanner();
+render();
+setInterval(simUpdate,4500);
+</script>
+</body>
+</html>
