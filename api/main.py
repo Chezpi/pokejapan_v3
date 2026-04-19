@@ -13,7 +13,6 @@ import httpx
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
