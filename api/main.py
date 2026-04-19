@@ -168,41 +168,25 @@ def get_conn():
     return psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
 
 def init_db():
-    conn = get_conn(); cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS cards (
-            id          SERIAL PRIMARY KEY,
-            pokecazilla_id  TEXT UNIQUE,   -- ID interno de Pokécazilla (/products/detail/XXXXX)
-            name_ja     TEXT NOT NULL,
-            name_en     TEXT DEFAULT '',
-            set_code    TEXT DEFAULT '',   -- e.g. "sv2a"
-            set_name    TEXT DEFAULT '',
-            number      TEXT DEFAULT '',   -- e.g. "201/165"
-            rarity      TEXT DEFAULT '',   -- e.g. "SAR"
-            image_url   TEXT DEFAULT '',
-            detail_url  TEXT DEFAULT '',
-            category    TEXT DEFAULT 'carta'
-                        CHECK(category IN ('carta','caja','promo')),
-            created_at  TIMESTAMP DEFAULT NOW(),
-            updated_at  TIMESTAMP DEFAULT NOW()
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id SERIAL PRIMARY KEY,
+            name TEXT
         );
-        CREATE TABLE IF NOT EXISTS prices (
-            id          SERIAL PRIMARY KEY,
-            card_id     INTEGER REFERENCES cards(id) ON DELETE CASCADE,
-            source      TEXT NOT NULL,
-            price_jpy   INTEGER NOT NULL,
-            url         TEXT DEFAULT '',
-            scraped_at  TIMESTAMP DEFAULT NOW()
-        );
-        CREATE INDEX IF NOT EXISTS idx_prices_card
-            ON prices(card_id, scraped_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_cards_pokecazilla
-            ON cards(pokecazilla_id);
-        CREATE INDEX IF NOT EXISTS idx_cards_name
-            ON cards(name_ja);
-    """)
-    conn.commit(); cur.close(); conn.close()
-    log.info("DB inicializada")
+        """)
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        print("✅ DB OK")
+
+    except Exception as e:
+        print("❌ ERROR DB:", e)
 
 def get_last_price(card_id: int, source: str) -> Optional[int]:
     conn = get_conn(); cur = conn.cursor()
