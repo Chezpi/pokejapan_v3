@@ -13,7 +13,10 @@ import httpx
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
+import psycopg2
 
+def get_conn():
+    return psycopg2.connect(os.getenv("DATABASE_URL"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
