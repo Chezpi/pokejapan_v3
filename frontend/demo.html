@@ -264,30 +264,19 @@ const GRADES=[
 const RSTY={SAR:'r-sar',MUR:'r-sar',HR:'r-sar',SR:'r-sr',AR:'r-ar',RR:'r-rr',PR:'r-pr',BOX:'r-sar'};
 
 // Cartas de demo (en producción vienen del backend via WebSocket)
-const CARDS=[
-  {id:1,name:'Charizard ex',name_ja:'リザードンex',set:'sv3',sname:'Obsidian Flames',rarity:'SAR',cat:'sar',
-   sources:[{src:'pokecazilla',jpy:37200,url:'https://pokecazilla.com',imgs:['https://assets.tcgdex.net/en/swsh/swsh3/136/high.webp']},
-            {src:'sneakerdunk',jpy:39500,url:'https://snkrdunk.com',imgs:[]}]},
-  {id:2,name:'Umbreon VMAX',name_ja:'ブラッキーVMAX',set:'swsh3',sname:'Darkness Ablaze',rarity:'SAR',cat:'sar',
-   sources:[{src:'pokecazilla',jpy:29800,url:'https://pokecazilla.com',imgs:[]},
-            {src:'sneakerdunk',jpy:31000,url:'https://snkrdunk.com',imgs:[]}]},
-  {id:3,name:'Mewtwo ex SAR',name_ja:'ミュウツーex',set:'sv1',sname:'SV Base Set',rarity:'SAR',cat:'sar',
-   sources:[{src:'pokecazilla',jpy:12100,url:'https://pokecazilla.com',imgs:[]},
-            {src:'sneakerdunk',jpy:13200,url:'https://snkrdunk.com',imgs:[]}]},
-  {id:4,name:'Gardevoir ex SAR',name_ja:'サーナイトex',set:'sv2',sname:'Paldea Evolved',rarity:'SAR',cat:'sar',
-   sources:[{src:'pokecazilla',jpy:5800,url:'https://pokecazilla.com',imgs:[]},
-            {src:'sneakerdunk',jpy:6200,url:'',imgs:[]}]},
-  {id:5,name:'Pikachu VMAX',name_ja:'ピカチュウVMAX',set:'swsh3',sname:'Vivid Voltage',rarity:'RR',cat:'carta',
-   sources:[{src:'pokecazilla',jpy:6400,url:'https://pokecazilla.com',imgs:[]}]},
-  {id:6,name:'Pokemon 151 Box',name_ja:'ポケモン151ボックス',set:'sv2a',sname:'Pokemon 151',rarity:'BOX',cat:'caja',
-   sources:[{src:'pokecazilla',jpy:4900,url:'https://pokecazilla.com',imgs:[]},
-            {src:'sneakerdunk',jpy:5400,url:'',imgs:[]}]},
-  {id:7,name:'Pikachu Promo S-P',name_ja:'ピカチュウ プロモ',set:'promo',sname:'SV Promo',rarity:'PR',cat:'promo',
-   sources:[{src:'pokecazilla',jpy:3800,url:'https://pokecazilla.com',imgs:[]}]},
-  {id:8,name:'Greninja ex SR',name_ja:'ゲッコウガex',set:'sv4',sname:'Paradox Rift',rarity:'SR',cat:'carta',
-   sources:[{src:'pokecazilla',jpy:2100,url:'https://pokecazilla.com',imgs:[]},
-            {src:'sneakerdunk',jpy:2400,url:'',imgs:[]}]},
-];
+let CARDS = [];
+
+async function loadProducts() {
+  try {
+    const res = await fetch("https://web-production-ecddb.up.railway.app");
+    const data = await res.json();
+
+    CARDS = data;
+    render();
+  } catch (err) {
+    console.error("Error cargando productos:", err);
+  }
+}
 
 let activeCat='', cart=[], detailCard=null, detailGrade='A', detailSrc=0;
 
@@ -552,7 +541,7 @@ function simUpdate(){
   }
   render();
 }
-
+loadProducts();
 // Init
 updateBanner();
 render();
